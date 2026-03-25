@@ -68,9 +68,7 @@ fun SplitTunnelAppPickerView(
   }
 
   Scaffold(
-      topBar = {
-        Header(titleRes = R.string.split_tunneling, onBack = backToSettings)
-      },
+      topBar = { Header(titleRes = R.string.split_tunneling, onBack = backToSettings) },
   ) { innerPadding ->
     LazyColumn(modifier = Modifier.padding(innerPadding)) {
       if (mdmExcludedPackages.value?.isNotEmpty() == true) {
@@ -95,13 +93,13 @@ fun SplitTunnelAppPickerView(
                     stringResource(
                         if (allowSelected) R.string.selected_apps_will_access_tailscale
                         else
-                            R.string.selected_apps_will_access_the_internet_directly_without_using_tailscale))
+                            R.string
+                                .selected_apps_will_access_the_internet_directly_without_using_tailscale))
               })
         }
         item("modeSelector") {
           SingleChoiceSegmentedButtonRow(
-              modifier =
-                  Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
+              modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
           ) {
             SegmentedButton(
                 selected = !allowSelected,
