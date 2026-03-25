@@ -4,6 +4,7 @@ package com.tailscale.ipn
 
 import android.app.PendingIntent
 import android.content.Intent
+import android.Manifest
 import android.content.pm.PackageManager
 import android.net.VpnService
 import android.os.Build
@@ -210,12 +211,30 @@ open class IPNService : VpnService(), libtailscale.IPNService {
     }
 
     if (allowPackages) {
-      for (packageName in packagesList) {
-        TSLog.d(TAG, "Including app: $packageName")
-        allowApp(b, packageName)
+      // "Virtual Include": convert the user's include list into an exclude list
+      // so VPN builder always uses addDisallowedApplication. This avoids the
+      // Android platform issue where per-app Include mode breaks DNS resolution
+      // with Tailscale DNS / NextDNS.
+      val includedSet = packagesList.toSet()
+      val allInstalled =
+          packageManager
+              .getInstalledApplications(PackageManager.GET_META_DATA)
+              .filter { appInfo ->
+                appInfo.packageName != BuildConfig.APPLICATION_ID &&
+                    packageManager.checkPermission(
+                        Manifest.permission.INTERNET, appInfo.packageName) ==
+                        PackageManager.PERMISSION_GRANTED
+              }
+              .map { it.packageName }
+
+      val builtInExcluded = UninitializedApp.get().builtInDisallowedPackageNames.toSet()
+      val excludeSet = allInstalled.filter { !includedSet.contains(it) }.toSet() + builtInExcluded
+
+      TSLog.d(TAG, "Virtual Include: ${includedSet.size} included, ${excludeSet.size} excluded")
+      for (packageName in excludeSet) {
+        disallowApp(b, packageName)
       }
     } else {
-      // Make sure to also exclude hard-coded apps that are known to cause issues
       packagesList += UninitializedApp.get().builtInDisallowedPackageNames
 
       for (packageName in packagesList) {
