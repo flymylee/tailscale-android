@@ -2,9 +2,9 @@
 // SPDX-License-Identifier: BSD-3-Clause
 package com.tailscale.ipn
 
+import android.Manifest
 import android.app.PendingIntent
 import android.content.Intent
-import android.Manifest
 import android.content.pm.PackageManager
 import android.net.VpnService
 import android.os.Build
@@ -154,14 +154,6 @@ open class IPNService : VpnService(), libtailscale.IPNService {
         0,
         Intent(this, MainActivity::class.java),
         PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
-  }
-
-  private fun allowApp(b: Builder, name: String) {
-    try {
-      b.addAllowedApplication(name)
-    } catch (e: PackageManager.NameNotFoundException) {
-      TSLog.e(TAG, "Failed to add allowed application: $e")
-    }
   }
 
   private fun disallowApp(b: Builder, name: String) {
